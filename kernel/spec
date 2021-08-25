@@ -1,0 +1,10 @@
+Virtuics is designed to be a highly virtualized system, offering many services to virtualize
+and abstract hardware, even across processor architectures.
+The Monos microkernel is designed to provide the minimum amount of services for the driver layer
+to utilize. It integrates memory management, an IPC subsystem, and a process management subsystem.
+Drivers handle everything else using a client-server model (IPC), from VGA to filesystem management.
+Only the kernel can talk to the drivers, and functions must be accessed through the kernel using system 
+calls.
+Unlike how everything in linux works, by accessing a file at the top layer (even if it may be virtual) - 
+eg, accessing a drive through /dev/<device>, Virtuics requires programs to access resources via system 
+calls or IPC pipes.

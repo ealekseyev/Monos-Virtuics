@@ -1,0 +1,11 @@
+Drivers are found in the /drivers directory.
+Each driver is to have its own subdirectory within /drivers.
+Each driver must have a config file named config.ini with the following format:
+    NAME:<driver name>
+    FILENAME:<filename>
+
+Drivers are the first programs to load after the kernel.
+Drivers are to provide interfaces to the kernel, and only the kernel
+via IPC pipes which the kernel knows how to communicate with.
+Depending on the subsystem, the kernel may include system calls to
+allow user space programs to indirectly interface with the driver.
