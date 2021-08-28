@@ -1,6 +1,7 @@
+[bits 16]
 bios_print:
     pusha
-    mov  bx, 0007h   ; BH is DisplayPage, BL is GraphicsColor
+    ;mov  bx, 0007h   ; BH is DisplayPage, BL is GraphicsColor
   .start:
     mov  al, [si]    ; <<<<<<<<<
     cmp  al, 0 

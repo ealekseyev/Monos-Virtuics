@@ -3,19 +3,23 @@
 # $^ = all dependencies
 
 # First rule is the one executed when no parameters are fed to the Makefile
+# ld -m elf_i386 -l link.ld -o $@ -Ttext 0x1000 $^ --oformat binary
+INCLUDE="kernel/std"
 all: run
 
-kernel.bin: kernel_entry.o kernel.o
-	ld -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
-kernel_entry.o: kernel/kernel_entry.s
+obj/bin/kernel.bin: obj/kernel_entry.o obj/kernel.o
+	ld -m elf_i386 -T link.ld $^ -o $@ --oformat binary
+obj/kernel_entry.o: kernel/kernel_entry.s
 	nasm $< -f elf -o $@
-kernel.o: kernel/kernel.c
-	gcc -m32 -ffreestanding -c $< -o $@
-bootloader.bin: boot/bootloader.s
+obj/kernel.o: kernel/kernel.c
+	gcc -m32 -ffreestanding -fno-pie -I $(INCLUDE) -c $< -o $@
+obj/bin/bootloader.bin: boot/bootloader.s
 	nasm $< -f bin -o $@
-os-image.bin: bootloader.bin kernel.bin
-	cat $^ > $@
-run: os-image.bin
-	qemu-system-i386 -fda $<
+$(KERNEL): obj/bin/bootloader.bin obj/bin/kernel.bin
+	touch $(KERNEL)
+	cat $^ >> $(KERNEL)
+
+run: $(KERNEL)
+	qemu-system-i386 $<
 clean:
-	$(RM) *.bin *.o *.dis
+	rm obj/bin/*.bin obj/*.o *.bin

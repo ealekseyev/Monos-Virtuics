@@ -1,3 +1,4 @@
+[bits 16]
 ;;; gdt_start and gdt_end labels are used to compute size
 
 ; null segment descriptor

@@ -2,8 +2,8 @@
 switch_to_32bit:
     cli                     ; 1. disable interrupts
     lgdt [gdt_descriptor]   ; 2. load GDT descriptor
-    mov eax, cr0
-    or eax, 0x1             ; 3. enable protected mode
+    mov eax, cr0            ; 3. enable protected mode
+    or eax, 0x1             
     mov cr0, eax
     jmp CODE_SEG:init_32bit ; 4. far jump
 
