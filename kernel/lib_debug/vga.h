@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <memset.c>
 #include <string.h>
+#include "../libkern32/ports.c"
 
 #define VGA_BLACK 0
 #define VGA_BLUE 1
@@ -28,9 +29,15 @@ static const unsigned char Ylen = 25;
 
 static unsigned char global_color = 0x07;
 
-void writebuf(char* str, int x, int y) {
-    char* vidmem_offset = vidmem + ((y*Ylen) + x)*2;
-    size_t buflen = strlen(str);
+static uint8_t cursorX = 0;
+static uint8_t cursorY = 0;
+
+static inline uint32_t get_vram_offset(uint8_t x, uint8_t y) {
+    return vidmem + (x + y*Xlen)*2;
+}
+
+void writebufto(char* str, int x, int y) {
+    char* vidmem_offset = get_vram_offset(x, y);
     unsigned int j = 0;
     while(str[j] != '\0') {
         *(vidmem_offset+(j*2)) = str[j];
@@ -39,8 +46,37 @@ void writebuf(char* str, int x, int y) {
     }
 }
 
+void tty_writebuf(char* str) {
+    char* vidmem_offset;
+    unsigned int j = 0;
+    while(str[j] != '\0') {
+        // handle newline and return characters
+        if(str[j] == '\n') {
+            cursorX = 0; cursorY += 1;
+            j++;
+            continue;
+        } else if(str[j] == '\r') {
+            cursorX = 0;
+            j++;
+            continue;
+        }
+        vidmem_offset = (char*) get_vram_offset(cursorX, cursorY);
+        *(vidmem_offset) = str[j];
+        *(vidmem_offset+1) = global_color;
+        // increment cursor
+        if(cursorX < Xlen) {
+            cursorX++;
+        } else if(cursorX == Xlen) {
+            cursorX = 0;
+            cursorY += 1;
+        }
+        j++;
+    }
+    set_cursor(cursorX, cursorY);
+}
+
 void dumpstr(char* str) {
-    writebuf(str, 0, 0);
+    writebufto(str, 0, 0);
 }
 void clearscreen() {
     unsigned int j = 0;
@@ -50,10 +86,56 @@ void clearscreen() {
 		j += 2;
 	}
 }
-void setcolor(unsigned char bg, unsigned char fg) {
-    global_color = bg << 4 + fg;
+
+void dumphex32(uint32_t hex) {
+	uint8_t bit_offset = 28;
+	//while(bit_offset >= 0) {
+	for(int dignum = 0; dignum < 8; dignum++) {
+		uint8_t hex_dig = (hex >> bit_offset) & 0xf;
+		char hex_char;
+		if(hex_dig < 10) {
+			hex_char = 48 + hex_dig;
+		} else {
+			hex_char = 97 + (hex_dig - 10);
+		}
+		*(vidmem+(dignum*2)) = hex_char;
+		bit_offset -= 4;
+	}
 }
-void getcolor(unsigned char bg, unsigned char fg) {
+
+void setcolor(uint8_t bg, uint8_t fg) {
+    global_color = (bg << 4) + fg;
+}
+void getcolor(uint8_t bg, uint8_t fg) {
     return bg << 4 + fg;
 }
+
+// writing to ports part
+#define VGA_CTRL_REGISTER 0x3d4
+#define VGA_DATA_REGISTER 0x3d5
+#define VGA_OFFSET_LOW 0x0f
+#define VGA_OFFSET_HIGH 0x0e
+
+void _set_cursor(uint16_t offset) {
+    //offset /= 2;
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
+    port_writeb(VGA_DATA_REGISTER, (uint8_t) (offset >> 8));
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
+    port_writeb(VGA_DATA_REGISTER, (uint8_t) (offset & 0xff));
+}
+
+void set_cursor(uint8_t x, uint8_t y) {
+    _set_cursor((y*Xlen)+x);
+    cursorX = x;
+    cursorY = y;
+}
+
+int get_cursor() {
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
+    int offset = port_readb(VGA_DATA_REGISTER) << 8;
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
+    offset += port_readb(VGA_DATA_REGISTER);
+    return offset * 2;
+}
+
 #endif

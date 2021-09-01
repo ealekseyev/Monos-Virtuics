@@ -15,8 +15,11 @@ init_32bit:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    ;mov ax, CODE_SEG
+    ;mov cs, ax
 
     mov ebp, 0x90000        ; 6. setup stack
     mov esp, ebp
 
-    call BEGIN_32BIT        ; 7. move back to mbr.asm
+    jmp BEGIN_32BIT
+    ;call BEGIN_32BIT        ; 7. move back to mbr.asm

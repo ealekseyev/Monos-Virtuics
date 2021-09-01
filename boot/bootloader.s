@@ -1,45 +1,48 @@
 [bits 16]
 [org 0x7c00]
-; where to load the kernel to
-KERNEL_OFFSET equ 0x1000 ; 0x8c00 - 0x9fc00 available memory for kernel
 
-; BIOS sets boot drive in 'dl'; store for later use
-mov [BOOT_DRIVE], dl
+KERNEL_OFFSET equ 0x1000 ; The same one we used when linking the kernel
 
-; set vga mode
-mov ah, 0
-mov al, 03h
-int 10h
+mov [BOOT_DRIVE], dl ; Remember that the BIOS sets us the boot drive in 'dl' on boot
 ; setup stack
 mov bp, 0x9000
 mov sp, bp
 
-call load_kernel
-call switch_to_32bit
-jmp $
+; set vga mode
+;mov ah, 0
+;mov al, 03h
+;int 10h
 
-;%include "boot/bios_debug.s"
+call load_kernel ; read the kernel from disk
+call switch_to_32bit ; disable interrupts, load GDT,  etc. Finally jumps to 'BEGIN_PM'
+jmp $ ; Never executed
+
+;%include "disk.asm"
+;%include "gdt.asm"
+;%include "switch-to-32bit.asm"
+%include "boot/bios_debug.s"
 %include "boot/disk.s"
 %include "boot/gdt.s"
 %include "boot/activate32.s"
 
 [bits 16]
 load_kernel:
-    mov bx, KERNEL_OFFSET ; bx -> destination
-    mov dh, 2             ; dh -> num sectors
-    mov dl, [BOOT_DRIVE]  ; dl -> disk
+    mov bx, KERNEL_OFFSET ; Read from disk and store in 0x1000
+    mov dh, 32
+    mov dl, [BOOT_DRIVE]
     call disk_load
     ret
 
 [bits 32]
 BEGIN_32BIT:
-    call KERNEL_OFFSET ; give control to the kernel
-    jmp $ ; loop in case kernel returns
+    call KERNEL_OFFSET ; Give control to the kernel
+    jmp $ ; Stay here when the kernel returns control to us (if ever)
 
-[bits 16]
-; boot drive variable
 BOOT_DRIVE db 0
+BOOTING db 'Loading kernel into memory ...', 0
+BIT_SWITCH db 'Entering Protected Mode and handing control to kernel...', 0
+EXIT_ERR db 'E: unexpected kernel exit', 0
 
-; padding & magic number
+; padding
 times 510 - ($-$$) db 0
 dw 0xaa55

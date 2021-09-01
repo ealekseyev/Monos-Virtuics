@@ -30,4 +30,7 @@ sectors_error:
     jmp disk_loop
 
 disk_loop:
-    jmp $
+    mov si, [DISK_ERR]
+    call bios_print
+
+DISK_ERR db "Error loading kernel from disk", 0

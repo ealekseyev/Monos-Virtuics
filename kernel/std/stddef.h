@@ -1,6 +1,8 @@
 #ifndef _STDDEF_H_
 #define _STDDEF_H_
 #define size_t int
+#define true 1
+#define false 0
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;

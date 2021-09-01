@@ -1,4 +1,4 @@
-#include "lib_debug/vga.h"
+#include "../../kernel/lib_debug/vga.h"
 
 void kernel_entry(void) {
 	setcolor(VGA_BLACK, VGA_LGREEN);
@@ -7,6 +7,6 @@ void kernel_entry(void) {
 	dumpstr(str);	
 }
 
-void kernel_halt() {
-    
+void kernel_halt(void) {
+
 }
