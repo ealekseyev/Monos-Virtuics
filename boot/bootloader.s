@@ -2,6 +2,7 @@
 [org 0x7c00]
 
 KERNEL_OFFSET equ 0x1000 ; The same one we used when linking the kernel
+BLS2_SIZE equ 8
 
 mov [BOOT_DRIVE], dl ; Remember that the BIOS sets us the boot drive in 'dl' on boot
 ; setup stack
@@ -28,7 +29,7 @@ jmp $ ; Never executed
 [bits 16]
 load_kernel:
     mov bx, KERNEL_OFFSET ; Read from disk and store in 0x1000
-    mov dh, 32
+    mov dh, BLS2_SIZE
     mov dl, [BOOT_DRIVE]
     call disk_load
     ret

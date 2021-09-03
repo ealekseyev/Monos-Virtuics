@@ -1,3 +1,5 @@
+/// To be used by stage 2 bootloader and main kernel disk driver - NOT the kernel directly.
+
 #ifndef _DISK_C_
 #define _DISK_C_
 #include <stddef.h>
@@ -26,7 +28,6 @@ static void ATA_wait_BSY();
 static void ATA_wait_DRQ();
 
 void read_sectors_ATA_PIO(uint32_t target_address, uint32_t LBA, uint8_t sector_count) {
-
 	ATA_wait_BSY();
 	port_writeb(0x1F6,0xE0 | ((LBA >>24) & 0xF));
 	port_writeb(0x1F2, sector_count);
@@ -36,9 +37,7 @@ void read_sectors_ATA_PIO(uint32_t target_address, uint32_t LBA, uint8_t sector_
 	port_writeb(0x1F7,0x20); //Send the read command
 
 	uint16_t* target = (uint16_t*) target_address;
-
-	for (int j =0;j<sector_count;j++)
-	{
+	for (int j =0;j<sector_count;j++) {
 		ATA_wait_BSY();
 		ATA_wait_DRQ();
 		for(int i=0;i<256;i++)
@@ -62,7 +61,6 @@ void write_sectors_ATA_PIO(uint32_t LBA, uint8_t sector_count, uint32_t* bytes) 
 		ATA_wait_DRQ();
 		for(int i = 0; i < 256; i++) {
             port_writel(0x1F0, bytes[i]);
-
 		}
 	}
 }

@@ -1,3 +1,5 @@
+/// To be used by stage 2 bootloader and main kernel VGA/TTY driver - NOT the kernel directly.
+
 #ifndef _VGA_H_
 #define _VGA_H_
 

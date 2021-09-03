@@ -22,8 +22,8 @@ typedef struct __attribute__((packed)) {
 
 // Lets us access our ASM functions from our C code.
 //extern void load_gdt(uint32_t);
-void load_gdt(gdt_ptr_t* gdt_ptr) {
-    __asm__("lgdt (%%edx)": : "d" (gdt_ptr));
+static inline void load_gdt(gdt_ptr_t* gdt_ptr) {
+    __asm__("lgdt (%%eax)" : : "a" (gdt_ptr));
 }
 
 static void gdt_set_gate(gdt_t* gdt_location, int32_t entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
@@ -39,10 +39,10 @@ static void gdt_set_gate(gdt_t* gdt_location, int32_t entry, uint32_t base, uint
 }
 
 #define __NULL_SEG  0
-#define __KERNEL_CS 1
-#define __KERNEL_DS 2
-#define __USER_CS   3
-#define __USER_DS   4
+#define __KERNEL_CS 4
+#define __KERNEL_DS 8
+#define __USER_CS   12
+#define __USER_DS   16
 
 void init_gdt(gdt_t* gdt_location) {
     gdt_ptr_t gdt_ptr;

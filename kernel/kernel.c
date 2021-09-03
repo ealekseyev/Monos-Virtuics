@@ -1,12 +1,8 @@
-#include "../../kernel/lib_debug/vga.h"
+#include <vga.h>
 
 void kernel_entry(void) {
 	setcolor(VGA_BLACK, VGA_LGREEN);
 	clearscreen();
-	char* str = "this is a test\n";
-	dumpstr(str);	
-}
-
-void kernel_halt(void) {
-
+	char* str = "Kernel successfully loaded!\n";
+	tty_writebuf(str);	
 }
