@@ -21,8 +21,15 @@ typedef struct __attribute__((__packed__)) {
     uint32_t base;                // The address of the first element in our idt_entry_t array.
 } idt_ptr_t;
 
+typedef struct __attribute__((__packed__)) {
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // eax pushed first, edi last.
+} reg_t;
+typedef struct __attribute__((__packed__)) {
+    uint16_t ip, cs, flags, sp, ss;
+} int_frame_t;
+
 // These extern directives let us access the addresses of our ASM ISR handlers.
-/*extern void isr0 ();
+extern void isr0 ();
 extern void isr1 ();
 extern void isr2 ();
 extern void isr3 ();
@@ -54,8 +61,6 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
-
-
 // IRQ Handlers
 extern void irq0();
 extern void irq1();
@@ -72,11 +77,9 @@ extern void irq11();
 extern void irq12();
 extern void irq13();
 extern void irq14();
-extern void irq15();*/
+extern void irq15();
 
-void load_idt(idt_ptr_t* idt_ptr) {
-    __asm__("lidt (%%edx)": : "d" (idt_ptr));
-}
+extern void load_idt(idt_ptr_t* idt_ptr);
 
 static void idt_set_gate(idt_t* idt_location, uint8_t num, uint32_t base, uint16_t sel, uint8_t flags) {
     idt_location[num].base_lo  = base & 0xFFFF;
@@ -89,7 +92,20 @@ static void idt_set_gate(idt_t* idt_location, uint8_t num, uint32_t base, uint16
     idt_location[num].flags    = flags /* | 0x60 */;
 }
 
-void init_idt(idt_t* idt_location) {
+static void idt_format(idt_t* idt_entry, uint32_t base, uint16_t sel, uint8_t flags) {
+    idt_entry->base_lo  = base & 0xFFFF;
+    idt_entry->base_hi  = (base >> 16) & 0xFFFF;
+
+    idt_entry->selector = sel;
+    idt_entry->always0  = 0;
+    // We must uncomment the OR below when we get to using user-mode.
+    // It sets the interrupt gate's privilege level to 3.
+    idt_entry->flags    = flags /* | 0x60 */;
+}
+
+idt_t* idt_location;
+void init_idt(idt_t* kern_idt) {
+    idt_location = kern_idt;
     idt_ptr_t idt_ptr;
     idt_ptr.limit = sizeof(idt_t) * 256 - 1;
     idt_ptr.base  = (uint32_t) idt_location;
@@ -97,7 +113,7 @@ void init_idt(idt_t* idt_location) {
     memset(idt_location, 0, sizeof(idt_t)*IDT_SIZE);
 
     // Generic intel error code interrupts
-    /*idt_set_gate(idt_location,  0, (uint32_t)isr0,  0x08, 0x8E);
+    idt_set_gate(idt_location,  0, (uint32_t)isr0,  0x08, 0x8E);
     idt_set_gate(idt_location,  1, (uint32_t)isr1,  0x08, 0x8E);
     idt_set_gate(idt_location,  2, (uint32_t)isr2,  0x08, 0x8E);
     idt_set_gate(idt_location,  3, (uint32_t)isr3,  0x08, 0x8E);
@@ -131,7 +147,7 @@ void init_idt(idt_t* idt_location) {
     idt_set_gate(idt_location, 31, (uint32_t)isr31, 0x08, 0x8E);
 
     // IRQ entries
-    idt_set_gate(idt_location, 32, (uint32_t)irq0,  0x08, 0x8E);
+    /*idt_set_gate(idt_location, 32, (uint32_t)irq0,  0x08, 0x8E);
     idt_set_gate(idt_location, 33, (uint32_t)irq1,  0x08, 0x8E);
     idt_set_gate(idt_location, 34, (uint32_t)irq2,  0x08, 0x8E);
     idt_set_gate(idt_location, 35, (uint32_t)irq3,  0x08, 0x8E);
@@ -149,5 +165,25 @@ void init_idt(idt_t* idt_location) {
     idt_set_gate(idt_location, 47, (uint32_t)irq15, 0x08, 0x8E);*/
 
     load_idt(&idt_ptr);
+}
+
+#define INT_START asm volatile("pusha")
+#define INT_END asm volatile("popa"); asm volatile("iret")
+// handlers must implement IRQ_START and IRQ_END. (or int attr)
+// TODO: set error codes or whatever
+int add_int_handler(uint8_t gate_num, uint32_t* handler) {
+    idt_set_gate(idt_location, gate_num, (uint32_t)handler, 0x08, 0x8E);
+    return 0;
+}
+bool is_int_populated(uint8_t gate_num) {
+    if((idt_location[gate_num]).base_lo == 0 && (idt_location[gate_num]).base_hi == 0)
+        return false;
+    return true;
+}
+
+uint32_t* int_routines[255];
+
+void isr_handler() {
+return;
 }
 #endif

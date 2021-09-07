@@ -34,12 +34,14 @@ static unsigned char global_color = 0x07;
 static uint8_t cursorX = 0;
 static uint8_t cursorY = 0;
 
-static inline uint32_t get_vram_offset(uint8_t x, uint8_t y) {
-    return vidmem + (x + y*Xlen)*2;
+void set_cursor(uint8_t, uint8_t);
+
+static inline uint32_t* get_vram_offset(uint8_t x, uint8_t y) {
+    return (uint32_t*)(vidmem + (x + y*Xlen)*2);
 }
 
 void writebufto(char* str, int x, int y) {
-    char* vidmem_offset = get_vram_offset(x, y);
+    char* vidmem_offset = (char*) get_vram_offset(x, y);
     unsigned int j = 0;
     while(str[j] != '\0') {
         *(vidmem_offset+(j*2)) = str[j];
@@ -108,8 +110,8 @@ void dumphex32(uint32_t hex) {
 void setcolor(uint8_t bg, uint8_t fg) {
     global_color = (bg << 4) + fg;
 }
-void getcolor(uint8_t bg, uint8_t fg) {
-    return bg << 4 + fg;
+uint8_t getcolor(uint8_t bg, uint8_t fg) {
+    return (bg << 4) + fg;
 }
 
 // writing to ports part

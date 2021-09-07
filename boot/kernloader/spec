@@ -1,6 +1,10 @@
 0x0010_0000 - 0x0010_3fff: IDT (256x 64 bit entries)
 0x0010_4000 - 0x0010_bfff: GDT (1024x 32 bit entries)
 0x0010_c000 - 0x0011_3fff: PD  (1024x 32 bit entries) (must also be 0x1000 aligned)
-0x0011_4000 - 0x0011_bfff: PT  (1024x 32 bit entries) (must also be 0x1000 aligned)
-0x0011_c000 - 0x0011_ffff: Reserved
+#0x0011_4000 - 0x0011_bfff: PT  (1024x 32 bit entries) (must also be 0x1000 aligned)
+0x0011_4000 - 0x0011_ffff: Reserved
+0x0011_4000 - current task (core 0)
+0x0011_4001 - current task (core 1)
+0x0011_4002 - current task (core 2)
+0x0011_4003 - current task (core 3)
 0x0012_0000 - 0xffff_ffff: Operating System

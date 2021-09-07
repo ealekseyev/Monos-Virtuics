@@ -1,12 +1,15 @@
 [bits 16]
 [org 0x7c00]
 
+; also update /kern_const.c and /makefile for BLS2_SIZE
 KERNEL_OFFSET equ 0x1000 ; The same one we used when linking the kernel
-BLS2_SIZE equ 8
+BLS2_SIZE equ 16
+BLS2_STACK_START equ 0x9000
+
 
 mov [BOOT_DRIVE], dl ; Remember that the BIOS sets us the boot drive in 'dl' on boot
 ; setup stack
-mov bp, 0x9000
+mov bp, BLS2_STACK_START
 mov sp, bp
 
 ; set vga mode
@@ -21,10 +24,10 @@ jmp $ ; Never executed
 ;%include "disk.asm"
 ;%include "gdt.asm"
 ;%include "switch-to-32bit.asm"
-%include "boot/bios_debug.s"
-%include "boot/disk.s"
-%include "boot/gdt.s"
-%include "boot/activate32.s"
+%include "boot/bootsect/bios_debug.s"
+%include "boot/bootsect/disk.s"
+%include "boot/bootsect/gdt.s"
+%include "boot/bootsect/activate32.s"
 
 [bits 16]
 load_kernel:
