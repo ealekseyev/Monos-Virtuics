@@ -4,9 +4,10 @@
 #define _VGA_H_
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <memset.c>
 #include <string.h>
-#include "../libkern32/ports.c"
+#include <ports.c>
 
 #define VGA_BLACK 0
 #define VGA_BLUE 1
@@ -89,6 +90,7 @@ void clearscreen() {
 		vidmem[j+1] = global_color; 		
 		j += 2;
 	}
+    set_cursor(0, 0);
 }
 
 void dumphex32(uint32_t hex) {
@@ -140,6 +142,14 @@ int get_cursor() {
     port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
     offset += port_readb(VGA_DATA_REGISTER);
     return offset * 2;
+}
+
+extern char* _global_buf;
+void printword(uint16_t word) {
+	tty_writebuf(itoa(word, _global_buf, 16));
+}
+void printint(uint32_t hex) {
+	tty_writebuf(itoa(hex, _global_buf, 16));
 }
 
 #endif

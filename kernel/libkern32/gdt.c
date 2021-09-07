@@ -42,11 +42,11 @@ static void gdt_set_gate(gdt_t* gdt_location, int32_t entry, uint32_t base, uint
 #define __KERNEL_DS 0x10
 #define __USER_CS   0x18
 #define __USER_DS   0x20*/
-extern uint32_t __NULL_SEG;
-extern uint32_t __KERNEL_CS;
-extern uint32_t __KERNEL_DS;
-extern uint32_t __USER_CS;
-extern uint32_t __USER_DS;
+extern uint16_t __NULL_SEG;
+extern uint16_t __KERNEL_CS;
+extern uint16_t __KERNEL_DS;
+extern uint16_t __USER_CS;
+extern uint16_t __USER_DS;
 
 void init_gdt(gdt_t* gdt_location) {
     gdt_ptr_t gdt_ptr;
@@ -71,6 +71,7 @@ void init_gdt(gdt_t* gdt_location) {
     gdt_set_gate(gdt_location, 4, 0, 0xFFFFFFFF, 0xF2, 0xCF); //User mode data segment
 
     load_gdt(&gdt_ptr);
+    // idk if this is in the right place
     set_segments(__KERNEL_DS);
 }
 #endif

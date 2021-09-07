@@ -8,9 +8,11 @@ load_gdt:
     lgdt [edx]
     ret
 
+extern printword
 set_segments:
     push ax
-    mov ax, word [esp+4] ;contains gdt data seg ptr to use
+    mov ax, word [esp+6] ;contains gdt data seg to use
+
     mov ds, ax
     mov es, ax
     mov fs, ax
