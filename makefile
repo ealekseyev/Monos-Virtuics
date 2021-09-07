@@ -37,7 +37,7 @@ obj/kernel/obj/kernel_entry.o: kernel/kernel_entry.s
 	nasm $< -f elf -o $@
 # dosent WORK!
 obj/kernel/obj/kernel.o: kernel/kernel.c
-	python3 compile_asm_dir.py "$(CUR_DIR)/kernel" "obj/kernel/obj" > /dev/null
+	python3 compile_asm_dir.py "$(CUR_DIR)/kernel" "obj/kernel/obj" #> /dev/null
 	clang -Werror -nostdlib -nodefaultlibs -fno-common -m32 -ffreestanding -fno-pie -I $(INCL1) -I $(INCL2) -c $< -o $@
 
 ### compiled binary
