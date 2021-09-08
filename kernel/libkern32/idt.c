@@ -2,7 +2,8 @@
 #define _IDT_H_
 #include <stddef.h>
 #include <memset.c>
-
+// comment to disable prints
+//#define DEBUG_ON
 #define IDT_SIZE 256 // 256 idt gates
 
 // A struct describing an interrupt gate.
@@ -189,7 +190,7 @@ int add_idt_int_handler(uint8_t gate_num, uint32_t* handler) {
     return 0;
 }
 // tells kern_interrupt_handler to call function. "Soft" interrupt.
-int register_kern_int_handler(uint8_t gate_num, void (*handler)(void)) {
+int register_kern_int_handler(uint8_t gate_num, void (*handler)(irs_t*)) {
     isr_l2_handlers[gate_num].addr = (uint32_t) handler;
     return 0;
 }
@@ -198,28 +199,40 @@ int del_kern_int_handler(uint8_t gate_num) {
     isr_l2_handlers[gate_num].addr = 0;
     return 0;
 }
-bool is_int_populated(uint8_t gate_num) {
+bool is_idt_int_populated(uint8_t gate_num) {
     if((idt_location[gate_num]).base_lo == 0 && (idt_location[gate_num]).base_hi == 0)
         return false;
     return true;
 }
+bool is_kern_int_populated(uint8_t gate_num) {
+    if(isr_l2_handlers[gate_num].addr == 0)
+        return false;
+    return true;
+}
 
+// all interrupts go here
 void kern_interrupt_handler(irs_t* registers) {
+#ifdef DEBUG_ON
     tty_writebuf("int triggered: 0x");
     printint(registers->int_no);
     tty_writebuf("\n");
+#endif
     // call function registered in irs_t to handle this interrupt
     // return if no registered handler
     if(isr_l2_handlers[registers->int_no].addr == 0) {
-        tty_writebuf("No registered interrupt handler.");
+        tty_writebuf("No registered handler for interrupt 0x");
+        printint(registers->int_no);
+        tty_writebuf("\n");
         return;
     }
+#ifdef DEBUG_ON
     tty_writebuf("launching interrupt handler at 0x");
     printint((uint32_t) isr_l2_handlers[registers->int_no].addr);
     tty_writebuf("...\n");
+#endif
 
-    void (*_kern_isr_gate_handler)(void);
+    void (*_kern_isr_gate_handler)(irs_t* registers);
     _kern_isr_gate_handler = (void*) (isr_l2_handlers[registers->int_no].addr);
-    (*_kern_isr_gate_handler)();
+    (*_kern_isr_gate_handler)(registers);
 }
 #endif

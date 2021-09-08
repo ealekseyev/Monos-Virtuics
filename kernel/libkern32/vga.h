@@ -152,4 +152,8 @@ void printint(uint32_t hex) {
 	tty_writebuf(itoa(hex, _global_buf, 16));
 }
 
+void printint_dec(uint32_t dec) {
+	tty_writebuf(itoa(dec, _global_buf, 10));
+}
+
 #endif
