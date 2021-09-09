@@ -26,7 +26,9 @@
 #define VGA_YELLOW 14
 #define VGA_BWHITE 15
 
+// vram actually starts at 0xa0000
 static char* vidmem = (char*)0xb8000; 	// video memory begins here
+static char* vidmem_end = (char*)0xc0000; // end of vram
 static const unsigned char Xlen = 80;
 static const unsigned char Ylen = 25;
 
@@ -51,9 +53,27 @@ void writebufto(char* str, int x, int y) {
     }
 }
 
+void vga_scroll(uint8_t lines) {
+    //uint8_t prev_x, prev_y;
+    //prev_x = cursorX; prev_y = cursorY;
+    char* vidmem_offset = (char*) get_vram_offset(0, lines);
+    memcpy(vidmem, vidmem_offset, ((Xlen-lines)*Ylen*2));
+    for(int i = 0; i < lines*Xlen*2; i+=2) {
+        // clear last lines
+        vidmem_offset = (char*) get_vram_offset(0, Ylen - lines);
+        vidmem_offset[i] = ' ';
+        vidmem_offset[i+1] = global_color;
+    }
+    set_cursor(cursorX, cursorY-lines);
+}
+
 void tty_writebuf(char* str) {
     char* vidmem_offset;
     unsigned int j = 0;
+    // do we scroll?
+    if(cursorY == Ylen) {
+        vga_scroll(1);
+    }
     while(str[j] != '\0') {
         // handle newline and return characters
         if(str[j] == '\n') {
@@ -83,7 +103,7 @@ void tty_writebuf(char* str) {
 void dumpstr(char* str) {
     writebufto(str, 0, 0);
 }
-void clearscreen() {
+void clear_screen() {
     unsigned int j = 0;
     while(j < Xlen * Ylen * 2) {
 		vidmem[j] = ' ';
@@ -136,12 +156,15 @@ void set_cursor(uint8_t x, uint8_t y) {
     cursorY = y;
 }
 
-int get_cursor() {
+//TODO: test
+void get_cursor(uint8_t* x, uint8_t* y) {
     port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
     int offset = port_readb(VGA_DATA_REGISTER) << 8;
     port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
     offset += port_readb(VGA_DATA_REGISTER);
-    return offset * 2;
+    *x = offset%Xlen;
+    *y = (offset-(*x))/Ylen;
+    //return offset * 2;
 }
 
 extern char* _global_buf;

@@ -28,7 +28,7 @@ void copy_kernel(uint32_t dst_addr) {
 
 void load_kern(void) {
 	setcolor(VGA_RED, VGA_LGREEN);
-	clearscreen();
+	clear_screen();
 	tty_writebuf(str_boot);
 
 	copy_kernel(_kern_start_mem);

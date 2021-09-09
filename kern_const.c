@@ -19,6 +19,9 @@ void* _global_pd = (void*) 0x0010c000; // paging directory
 
 // unused memory - could be faulty however
 char* _global_buf = (char*) 0x500;
+// where malloc can start alloc-ing
+void* _malloc_start = (void*) 0x50000; // paging directory
+
 
 const uint16_t __NULL_SEG = 0;
 const uint16_t __KERNEL_CS = 0x08;

@@ -9,7 +9,7 @@ void test_proc_func2(void);
 
 static inline void enviro_init(void) {
 	setcolor(VGA_GRAY, VGA_LGREEN);
-	clearscreen();
+	clear_screen();
 	tty_writebuf("Kernel successfully loaded!\n");
 
 	init_idt((idt_t*) _global_idt);
@@ -23,13 +23,21 @@ static inline void enviro_init(void) {
 /* KERNEL ENTRY FUNCTION */
 void kernel_entry(void) {
 	enviro_init();
-	timer_proc_t test_proc;
+	/*timer_proc_t test_proc;
 	test_proc.freq = 2000;
 	test_proc.handler = &test_proc_func;
 	register_timed_process(&test_proc);
 	test_proc.freq = 4000;
 	test_proc.handler = &test_proc_func2;
-	register_timed_process(&test_proc);
+	register_timed_process(&test_proc);*/
+	uint8_t count = 0;
+	while(1) {
+		tty_writebuf("tick ");
+		printword(count);
+		tty_writebuf("\n");
+		kern_sleep(500);
+		count++;
+	}
 }
 
 void test_proc_func(void) {

@@ -6,6 +6,33 @@
 //#define DEBUG_ON
 #define IDT_SIZE 256 // 256 idt gates
 
+#define ISR_DIV_BY_ZERO 0
+#define ISR_DEBUG_EXCEPTION 1
+#define ISR_NON_MASKABLE_INT_EXCEPTION 2
+#define ISR_INT_3_EXCEPTION 3
+#define ISR_INTO_EXCEPTION 4
+#define ISR_OUT_OF_BOUNDS 5
+#define ISR_INVALID_OPCODE 6
+#define ISR_COPROCESSOR_ABSENT 7
+#define ISR_DOUBLE_FAULT 8
+#define ISR_COPROCESSOR_SEG_OVERRUN 9
+#define ISR_BAD_TSS 10
+#define ISR_SEG_ABSENT 11
+#define ISR_STACK_FAULT 12
+#define ISR_GENERAL_PROT_FAULT 13
+#define ISR_PAGE_FAULT 14
+#define ISR_RESERVED_15 15
+#define ISR_FLOAT_EXCEPTION 16
+#define ISR_ALIGNMENT_CHK_EXCEPTION 17
+#define ISR_MACHINE_CHK_EXCEPTION 18
+#define ISR_RESERVED_19 19
+#define ISR_RESERVED_20 20
+#define ISR_RESERVED_21 21
+#define ISR_RESERVED_22 22
+#define ISR_RESERVED_23 23
+#define ISR_RESERVED_24 24
+#define ISR_RESERVED_25 25
+
 // A struct describing an interrupt gate.
 typedef struct __attribute__((__packed__)) {
     uint16_t base_lo;             // The lower 16 bits of the address to jump to when this interrupt fires.
