@@ -1,0 +1,3 @@
+ata0-slave: type=cdrom, path="/Volumes/FILES/Monos-Virtuics/iso/monos-0_1_0-i386.img", status=inserted
+
+

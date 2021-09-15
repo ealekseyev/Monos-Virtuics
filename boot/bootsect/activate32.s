@@ -1,7 +1,13 @@
 [bits 16]
+BLS2_TMP_STACK equ 0x90000
+
 switch_to_32bit:
     cli                     ; 1. disable interrupts
     lgdt [gdt_descriptor]   ; 2. load GDT descriptor
+
+    mov si, BIT_SWITCH
+    call bios_print
+    
     mov eax, cr0            ; 3. enable protected mode
     or eax, 0x1             
     mov cr0, eax
@@ -18,7 +24,7 @@ init_32bit:
     ;mov ax, CODE_SEG
     ;mov cs, ax
 
-    mov ebp, 0x90000        ; 6. setup stack
+    mov ebp, BLS2_TMP_STACK   ; 6. setup temporary stack for bl
     mov esp, ebp
 
     jmp BEGIN_32BIT
