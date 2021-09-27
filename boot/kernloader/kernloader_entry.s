@@ -24,6 +24,7 @@ extern _kern_stack_start
 ;_____________ignore! stack is set to the end of memory - same as _installed_mem_loc 
 ; stack is set to end of first pd entry - 4mb exactly. grows downward towards the kernel.
 ; otherwise due to absence of a location to return to (usually stored in the stack)
+
 transfer_control:
     mov eax, [_kern_start_mem]
     mov ebx, [_kern_stack_start] ;[_installed_mem_loc]

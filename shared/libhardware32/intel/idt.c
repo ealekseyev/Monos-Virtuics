@@ -56,7 +56,7 @@ extern void clear_interrupts(void);
 extern isr_handler_t* _kern_isr_handlers;
 extern uint8_t _isr_padding;
 
-#define IDT_PRESENT_ENTRIES 80
+#define IDT_PRESENT_ENTRIES 0xff
 #define IDT_SIZE 0xff
 
 static void idt_format(idt_t* idt_entry, uint32_t base, uint16_t sel, uint8_t flags) {
@@ -95,25 +95,22 @@ void init_idt(idt_t* _idt, isr_handler_t* _kern_isrs) {
 
 }*/
 
-void kern_interrupt_handler(irs_t* registers) {
+void* kern_interrupt_handler(irs_t* regs) {
     //tty_write_hex_sandwich("int triggered: ", registers->int_no, "\n");
     // call function registered in irs_t to handle this interrupt
     // return if no registered handler
-    if(((isr_handler_t*)_kern_isr_handlers)[registers->int_no].addr == 0) {
-        kill_kern(0x0, RS_UNDEF_INT);
+    //tty_write_hex_sandwich("Interrupt: ", regs->int_no, "\n");
 
-        /*tty_write_hex_sandwich("Faulty instruction: ", registers->eip, "\n");
-        for(int i = 0; i < sizeof(irs_t); i++) {
-            printint(*((uint8_t*)registers+i));
-            tty_writebuf(" ");
-        }*/
+    if(((isr_handler_t*)_kern_isr_handlers)[regs->int_no].addr == 0) {
+        //kill_kern(regs, RS_UNDEF_INT);
+        tty_write_hex_sandwich("Unregistered interrupt: ", regs->int_no, "\n");
         while(true);
-        return;
     }
-    //tty_write_hex_sandwich("launching interrupt handler at ", (uint32_t) ((isr_handler_t*)_kern_isr_handlers)[registers->int_no].addr, "...\n");
-    void (*isr_handler)(irs_t* registers);
-    isr_handler = (void*) (((isr_handler_t*)_kern_isr_handlers)[registers->int_no].addr);
-    (*isr_handler)(registers);
+    //tty_write_hex_sandwich("launching interrupt handler at ", (uint32_t) ((isr_handler_t*)_kern_isr_handlers)[regs->int_no].addr, "...\n");
+    void* (*isr_handler)(irs_t*);
+    isr_handler = (void*) (((isr_handler_t*)_kern_isr_handlers)[regs->int_no].addr);
+    (*isr_handler)(regs);
+    return 0;
     //tty_write_hex_sandwich("Jumping to ", (uint32_t) isr_handler, "\n");
 }
 

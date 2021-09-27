@@ -3,6 +3,7 @@
         "vga.h": "c",
         "hardware.h": "c",
         "mas.c": "cpp",
-        "debug.h": "c"
+        "debug.h": "c",
+        "registers.h": "c"
     }
 }

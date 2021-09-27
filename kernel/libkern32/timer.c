@@ -6,7 +6,7 @@
 /*
     Timed processes subsystem
 */
-
+/*
 typedef struct {
     void* handler;
     uint32_t freq;   // execute every <freq> ticks
@@ -14,11 +14,11 @@ typedef struct {
 } timer_proc_t;
 
 static timer_proc_t timer_processes[255];
-static size_t tp_len;
+static size_t tp_len;*/
 
 // prototypes
-uint32_t timer_get_ticks(void);
-
+//uint32_t timer_get_ticks(void);
+/*
 void register_timed_process(timer_proc_t* proc) {
     timer_processes[tp_len].handler = proc->handler;
     timer_processes[tp_len].freq = proc->freq;
@@ -28,24 +28,24 @@ void register_timed_process(timer_proc_t* proc) {
     proc_launch = timer_processes[tp_len].handler;
     proc_launch();
     tp_len++;
-}
+}*/
 
 // this is the handler that runs every time the timer fires.
 // 1000 ticks in a second
 // prolly dont need volatile (no multicore processing in kernel yet)
 // TODO: all these operations seriously slow down the timer.
 static volatile uint32_t ticks; // millis since timer init
-void _timer_handler(irs_t* registers) {
+/*void _timer_handler(irs_t* registers) {
     ticks++;
     master_pic_irq_done();
-    /*for(int i = 0; i < tp_len; i++) {
+    for(int i = 0; i < tp_len; i++) {
         if((ticks - timer_processes[i]._start) % timer_processes[i].freq == 0) {
             void (*proc_launch)();
             proc_launch = timer_processes[i].handler;
             proc_launch(); 
         }
-    }*/
-}
+    }
+}*/
 
 static void set_timer_freq(int hz) {
     int divisor = 1193180 / hz;       /* Calculate our divisor */
@@ -54,7 +54,7 @@ static void set_timer_freq(int hz) {
     port_writeb(0x40, divisor >> 8);     /* Set high byte of divisor */
 }
 
-#define kern_millis timer_get_ticks
+/*#define kern_millis timer_get_ticks
 uint32_t timer_get_ticks() {
     return ticks;
 }
@@ -67,11 +67,11 @@ void kern_sleep(uint32_t time) {
 
 void wait_for_timer_init() {
     while(ticks == 0);
-}
+}*/
 
-void init_pit() {
-    set_timer_freq(1000); // 1000 hz
-    isr_register_handler(32, _timer_handler);
+void init_pit(int freq, void* handler) {
+    set_timer_freq(freq); // 1000 hz
+    isr_register_handler(32, handler);
     irq_enable(0);
 }
 

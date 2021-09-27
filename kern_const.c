@@ -13,8 +13,8 @@ typedef unsigned char uint8_t;
 #define KERN_START_MEM  0x00500000   // kernel/link.ld
 
 // when modifying these, must also modify makefile
-#define BL_SIZE     0x4000    // also must modify bootsector 'BLS2_SIZE' to match _bls2_sectors
-#define KERN_SIZE   0x8000
+#define BL_SIZE     0x6000    // also must modify bootsector 'BLS2_SIZE' to match _bls2_sectors
+#define KERN_SIZE   0x10000
 
 const uint32_t _bls2_size = BL_SIZE; // (sectors*512)
 const uint32_t _bls2_sectors = BL_SIZE/512; // 16
@@ -29,10 +29,14 @@ const uint32_t _kern_start_mem = KERN_START_MEM; // not the same as kernel entry
 const uint32_t _kern_end_mem = KERN_START_MEM+KERN_SIZE;
 
 // intel data structures
-void* _global_idt = (void*) 0x10000; // idt + 0x200 bytes
-void* _global_gdt = (void*) 0x11000; // gdt
-void* _global_pd = (void*) 0x13000; // paging directory
+void* _global_idt = (void*) 0x10000;        // idt + 0x200 bytes
+void* _global_gdt = (void*) 0x11000;        // gdt
+void* _global_pd = (void*) 0x13000;         // paging directory
 void* _kern_isr_handlers = (void*) 0x14000; // kernel-level isr handler array
+// tss seg mem is currently reserved and unused.
+void* _global_tss = (void*) 0x14800;        // task state segment. 104 bytes total.
+void* _global_proc_tbl = (void*) 0x15000;   // where list of processes are store
+void* _global_pt_matrix = (void*) 0x100000; // 4m matrix of chronological page tables.
 
 //const uint32_t _stack_top = 0x90000; //TODO: fix paging so the ptr is at the end of memory again
 
@@ -41,6 +45,7 @@ void* _kern_isr_handlers = (void*) 0x14000; // kernel-level isr handler array
 // Monos uses 0x9e000 - 0x9fc00 for global nonconst & nonarray data values
 uint32_t* _installed_mem_loc = (uint32_t*) 0x9e000; // 0x100000; // at least 1 megabyte on all modern x86 systems since the i8086
 uint8_t* _installed_cores =  (uint8_t*) 0x9e004;
+uint32_t _cur_proc_ptr = 0x9e008;         // 0x9e008 points to current running process descriptor block
 
 void* _kern_stack_start = (void*) 0x00800000; // unfortunately, moving the stack whie the kernel is running causes all sorts of problems. we must account for this.
 
@@ -52,8 +57,8 @@ char* _global_buf = (char*) 0x500;
 //void* _malloc_start = (void*) 0x50000; // paging directory
 
 // gdt entry offsets
-const uint16_t __NULL_SEG = 0;
-const uint16_t __KERNEL_CS = 0x08;
-const uint16_t __KERNEL_DS = 0x10;
-const uint16_t __USER_CS = 0x18;
-const uint16_t __USER_DS = 0x20;
+const uint32_t __NULL_SEG = 0;
+const uint32_t __KERNEL_CS = 0x08;
+const uint32_t __KERNEL_DS = 0x10;
+const uint32_t __USER_CS = 0x18;
+const uint32_t __USER_DS = 0x20;

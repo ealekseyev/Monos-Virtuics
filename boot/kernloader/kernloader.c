@@ -26,7 +26,7 @@ extern void* _kern_stack_start;
 __attribute__((__noreturn__)) extern void transfer_control();
 
 void copy_kernel(uint32_t dst_addr) {
-	read_sectors_ATA_PIO(dst_addr, _bls2_sectors+1, _kern32_sectors); // load 64 sectors of kernel from next sector after bootlaoder
+	read_sectors_ATA_PIO(dst_addr-1, _bls2_sectors+1, _kern32_sectors); // load 128 sectors of kernel from next sector after bootlaoder
 }
 
 void load_kern(void) {
@@ -54,6 +54,8 @@ void load_kern(void) {
 
 	tty_write_hex_sandwich("Setting stack pointer to ", (int)_kern_stack_start, "\n");
 	tty_writebuf("Transferring control to main kernel\n");
+
+	//tty_write_hex8_sandwich("Val @ kernel start: ", *((uint8_t*)0x500002), "\n");
 
 	transfer_control();
 }

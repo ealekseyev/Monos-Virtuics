@@ -27,11 +27,12 @@ extern void load_gdt(gdt_ptr_t* gdt_ptr);
 extern void get_gdtr(gdt_ptr_t* gdt_ptr);
 extern void set_segments(uint16_t gdt_offset);
 
-extern uint16_t __NULL_SEG;
-extern uint16_t __KERNEL_CS;
-extern uint16_t __KERNEL_DS;
-extern uint16_t __USER_CS;
-extern uint16_t __USER_DS;
+// technically 16, but stack only works with 4 byte vals
+extern uint32_t __NULL_SEG;
+extern uint32_t __KERNEL_CS;
+extern uint32_t __KERNEL_DS;
+extern uint32_t __USER_CS;
+extern uint32_t __USER_DS;
 
 static void _gdt_set_gate(gdt_t* gdt_entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
     gdt_entry->base_low = (base & 0xFFFF);

@@ -14,10 +14,10 @@ INCL_HARD32_SHARED="shared/libhardware32"
 INCL_KERN="kernel/libkern32"
 INCL_BLS2="boot/kernloader/libboot32"
 
-# 32 sectors
-BOOTLOADER_SIZE=16383 # size of bootloader_s2.bin - 1
-# 64 sectors
-KERNEL32_SIZE=32767 # size of kernel.elf - 1
+# 48 sectors
+BOOTLOADER_SIZE=24576 # size of bootloader_s2.bin - 1
+# 128 sectors
+KERNEL32_SIZE=65535 # size of kernel.elf - 1
 
 KERNEL="iso/monos-0_2_0-i386.bin"
 KERNEL_IMG="iso/monos-i386.img"

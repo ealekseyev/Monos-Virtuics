@@ -1,9 +1,11 @@
 [bits 16]
 [org 0x7c00]
 
+; NOTE: bios disk subsystem can only load 64 -1 sectors (-1 is the bootsect)
+
 ; also update /kern_const.c and /makefile for BLS2_SIZE
 KERNEL_OFFSET equ 0x8000 ; The same one we used when linking the kernel
-BLS2_SIZE equ 32
+BLS2_SIZE equ 48
 BLS2_STACK_START equ 0x90000
 
 

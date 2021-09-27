@@ -42,8 +42,35 @@ typedef struct {
     int bg:4;
 } vga_color_t;
 
-void tty_set_cursor(uint8_t, uint8_t);
+// writing to ports part
+#define VGA_CTRL_REGISTER 0x3d4
+#define VGA_DATA_REGISTER 0x3d5
+#define VGA_OFFSET_LOW 0x0f
+#define VGA_OFFSET_HIGH 0x0e
 
+void _tty_set_cursor(uint16_t offset) {
+    //offset /= 2;
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
+    port_writeb(VGA_DATA_REGISTER, (uint8_t) (offset >> 8));
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
+    port_writeb(VGA_DATA_REGISTER, (uint8_t) (offset & 0xff));
+}
+
+void tty_set_cursor(uint8_t x, uint8_t y) {
+    _tty_set_cursor((y*Xlen)+x);
+    cursorX = x;
+    cursorY = y;
+}
+
+void tty_get_cursor(uint8_t* x, uint8_t* y) {
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
+    int offset = port_readb(VGA_DATA_REGISTER) << 8;
+    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
+    offset += port_readb(VGA_DATA_REGISTER);
+    //offset/=2;
+    *x = offset%Xlen;
+    *y = (offset-(*x))/Xlen;
+}
 static inline uint32_t* get_vram_offset(uint8_t x, uint8_t y) {
     return (uint32_t*)(vidmem + (x + y*Xlen)*2);
 }
@@ -59,8 +86,7 @@ void writebufto(char* str, int x, int y) {
 }
 
 void tty_scroll(uint8_t lines) {
-    //uint8_t prev_x, prev_y;
-    //prev_x = cursorX; prev_y = cursorY;
+    tty_get_cursor(&cursorX, &cursorY);
     char* vidmem_offset = (char*) get_vram_offset(0, lines);
     memcpy(vidmem, vidmem_offset, ((Xlen-lines)*Ylen*2));
     for(int i = 0; i < lines*Xlen*2; i+=2) {
@@ -71,8 +97,9 @@ void tty_scroll(uint8_t lines) {
     }
     tty_set_cursor(cursorX, cursorY-lines);
 }
-
+#define tty_write tty_writebuf
 void tty_writebuf(char* str) {
+    tty_get_cursor(&cursorX, &cursorY);
     char* vidmem_offset;
     unsigned int j = 0;
     // do we scroll?
@@ -129,41 +156,17 @@ uint8_t tty_calculate_color(uint8_t bg, uint8_t fg) {
     return (bg << 4) + fg;
 }
 
-// writing to ports part
-#define VGA_CTRL_REGISTER 0x3d4
-#define VGA_DATA_REGISTER 0x3d5
-#define VGA_OFFSET_LOW 0x0f
-#define VGA_OFFSET_HIGH 0x0e
-
-void _tty_set_cursor(uint16_t offset) {
-    //offset /= 2;
-    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
-    port_writeb(VGA_DATA_REGISTER, (uint8_t) (offset >> 8));
-    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
-    port_writeb(VGA_DATA_REGISTER, (uint8_t) (offset & 0xff));
-}
-
-void tty_set_cursor(uint8_t x, uint8_t y) {
-    _tty_set_cursor((y*Xlen)+x);
-    cursorX = x;
-    cursorY = y;
-}
-
-void tty_get_cursor(uint8_t* x, uint8_t* y) {
-    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
-    int offset = port_readb(VGA_DATA_REGISTER) << 8;
-    port_writeb(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
-    offset += port_readb(VGA_DATA_REGISTER);
-    *x = offset%Xlen;
-    *y = (offset-(*x))/Ylen;
-}
-
 extern char* _global_buf;
 void printword(uint16_t word) {
 	tty_writebuf(itoa(word, _global_buf, 16));
 }
 void printint(uint32_t hex) {
 	tty_writebuf(itoa(hex, _global_buf, 16));
+}
+
+void printintln(uint32_t hex) {
+	tty_writebuf(itoa(hex, _global_buf, 16));
+    tty_write("\n");
 }
 
 void printint_dec(uint32_t dec) {

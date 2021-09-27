@@ -10,10 +10,12 @@ extern uint32_t _bls2_start_mem;
 extern uint32_t _bls2_end_mem;
 extern uint32_t _kern_start_mem;
 extern uint32_t _kern_end_mem;
+//extern isr_handler_t* _kern_isr_handlers;
 
 extern void* _global_idt;
 extern void* _global_gdt;
-extern page_dir_t* _global_pd;
+//extern void* _global_pd;
+
 
 void dump_kern_const() {
 	tty_write_hex_sandwich("Installed memory:      ", *_installed_mem_loc, " bytes\n");

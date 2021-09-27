@@ -8,3 +8,8 @@ calls.
 Unlike how everything in linux works, by accessing a file at the top layer (even if it may be virtual) - 
 eg, accessing a drive through /dev/<device>, Virtuics requires programs to access resources via system 
 calls or IPC pipes.
+
+
+
+Note that the kernel is linked with all asm files in project structure, highly increasing memory usage at compile.
+This is not a big deal for modern systems and is negligible, but for older systems this may be a significant hit.

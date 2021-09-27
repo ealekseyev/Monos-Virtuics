@@ -31,13 +31,15 @@ typedef page_table_t page_dir_t;
 extern void load_page_dir(page_dir_t* pd);
 extern void enable_paging();
 extern uint32_t get_pd_src(); // returns addr of currently loaded page directory
-extern page_dir_t* _global_pd;
+extern page_dir_t* _global_pd; // 4m memory!
 
 // page fault handler TODO
 void _page_fault(irs_t* registers) {
     //uint8_t color_buf = tty_get_global_color();
     //tty_set_global_color(color_buf >> 4, VGA_LRED);
     tty_write_hex_sandwich("Page Fault occurred: ", registers->err_code, "\n");
+    __asm__("cli");
+    kill_kern(registers, RS_PAGE_FAULT);
     //tty_set_global_color(color_buf >> 4, color_buf & 0xf);
     //while(true);
 }
